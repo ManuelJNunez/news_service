@@ -16,7 +16,7 @@ func TestNewRepository(t *testing.T) {
 	db, _, err := sqlmock.New()
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		db.Close()
+		db.Close() //nolint:errcheck
 	})
 
 	repo := NewRepository(db)
@@ -29,7 +29,7 @@ func TestGetByIDSuccess(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		db.Close()
+		db.Close() //nolint:errcheck
 	})
 
 	repo := NewRepository(db)
@@ -61,7 +61,7 @@ func TestGetByIDNotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		db.Close()
+		db.Close() //nolint:errcheck
 	})
 
 	repo := NewRepository(db)
@@ -82,7 +82,7 @@ func TestGetByIDDatabaseError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		db.Close()
+		db.Close() //nolint:errcheck
 	})
 
 	repo := NewRepository(db)
