@@ -40,7 +40,11 @@ func main() {
 		logger.Error("failed to connect to database", slog.Any("error", err))
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			logger.Error("failed to close database", slog.Any("error", err))
+		}
+	}()
 
 	// 4) Build dependencies from news domain
 	newsRepo := news.NewRepository(db)
@@ -99,7 +103,9 @@ func initDB(cfg *config.Config, logger *slog.Logger) (*sql.DB, error) {
 
 	// Ping database to force connection
 	if err := db.PingContext(ctx); err != nil {
-		db.Close()
+		if closeErr := db.Close(); closeErr != nil {
+			logger.Error("failed to close database after ping error", slog.Any("error", closeErr))
+		}
 		logger.Error("database ping failed", slog.Any("error", err))
 		return nil, err
 	}
