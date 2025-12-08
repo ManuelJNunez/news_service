@@ -97,7 +97,7 @@ func initDB(cfg *config.Config, logger *slog.Logger) (*sql.DB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Ping database connection, to check if connection is alive
+	// Ping database to force connection
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
 		logger.Error("database ping failed", slog.Any("error", err))

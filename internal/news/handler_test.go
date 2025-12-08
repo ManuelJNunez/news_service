@@ -6,13 +6,13 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
 	"html/template"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 type stubService struct {
@@ -40,17 +40,12 @@ func TestHandlerGetNewsMissingID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/news", nil)
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 
 	var resp map[string]string
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("failed to parse response: %v", err)
-	}
-	if resp["error"] != "id parameter is required" {
-		t.Fatalf("unexpected error message: %v", resp)
-	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "id parameter is required", resp["error"])
 }
 
 func TestHandlerGetNewsNotFound(t *testing.T) {
@@ -60,14 +55,12 @@ func TestHandlerGetNewsNotFound(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/news?id=1", nil)
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusNotFound {
-		t.Fatalf("expected 404, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
 	var resp map[string]string
-	_ = json.Unmarshal(w.Body.Bytes(), &resp)
-	if resp["error"] != "news not found" {
-		t.Fatalf("unexpected error message: %v", resp)
-	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "news not found", resp["error"])
 }
 
 func TestHandlerGetNewsInternalError(t *testing.T) {
@@ -77,14 +70,12 @@ func TestHandlerGetNewsInternalError(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/news?id=1", nil)
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusInternalServerError {
-		t.Fatalf("expected 500, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+
 	var resp map[string]string
-	_ = json.Unmarshal(w.Body.Bytes(), &resp)
-	if resp["error"] != "internal error" {
-		t.Fatalf("unexpected error message: %v", resp)
-	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "internal error", resp["error"])
 }
 
 func TestHandlerGetNewsSuccess(t *testing.T) {
@@ -95,11 +86,8 @@ func TestHandlerGetNewsSuccess(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/news?id=99", nil)
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", w.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
+
 	body := w.Body.String()
-	if !strings.Contains(body, "fake_title|fake_body") {
-		t.Fatalf("expected rendered template to contain article data, got %q", body)
-	}
+	assert.Contains(t, body, "fake_title|fake_body")
 }

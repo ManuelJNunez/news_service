@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoadSuccess(t *testing.T) {
@@ -10,15 +12,10 @@ func TestLoadSuccess(t *testing.T) {
 	t.Setenv("DB_DSN", "postgres://user:pass@localhost:5432/db?sslmode=disable")
 
 	cfg, err := Load()
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if cfg.HTTPPort != "9090" {
-		t.Fatalf("expected HTTPPort=9090, got %s", cfg.HTTPPort)
-	}
-	if cfg.DB_DSN == "" {
-		t.Fatalf("expected DB_DSN to be set")
-	}
+
+	assert.NoError(t, err)
+	assert.Equal(t, "9090", cfg.HTTPPort)
+	assert.NotEmpty(t, cfg.DB_DSN)
 }
 
 func TestLoadUsesDefaultPort(t *testing.T) {
@@ -27,12 +24,9 @@ func TestLoadUsesDefaultPort(t *testing.T) {
 	t.Setenv("DB_DSN", "dsn")
 
 	cfg, err := Load()
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if cfg.HTTPPort != "8000" {
-		t.Fatalf("expected default port 8000, got %s", cfg.HTTPPort)
-	}
+
+	assert.NoError(t, err)
+	assert.Equal(t, "8000", cfg.HTTPPort)
 }
 
 func TestLoadMissingDSN(t *testing.T) {
@@ -40,7 +34,6 @@ func TestLoadMissingDSN(t *testing.T) {
 	t.Setenv("DB_DSN", "")
 
 	_, err := Load()
-	if err == nil {
-		t.Fatalf("expected error for missing DB_DSN, got nil")
-	}
+
+	assert.Error(t, err)
 }
