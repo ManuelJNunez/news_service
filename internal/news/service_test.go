@@ -39,7 +39,7 @@ func TestServiceGetByIDError(t *testing.T) {
 	repo := &stubRepository{err: errors.New("failed to fetch article")}
 	svc := NewService(repo)
 
-	_, err := svc.GetByID(context.Background(), "abc")
+	_, err := svc.GetByID(context.Background(), "1")
 
 	assert.Error(t, err)
 	assert.True(t, repo.called)
