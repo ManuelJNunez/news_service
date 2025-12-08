@@ -15,7 +15,9 @@ import (
 func TestNewRepository(t *testing.T) {
 	db, _, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer func() {
+		assert.NoError(t, db.Close())
+	}()
 
 	repo := NewRepository(db)
 
@@ -26,7 +28,9 @@ func TestNewRepository(t *testing.T) {
 func TestGetByIDSuccess(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer func() {
+		assert.NoError(t, db.Close())
+	}()
 
 	repo := NewRepository(db)
 
@@ -56,7 +60,9 @@ func TestGetByIDSuccess(t *testing.T) {
 func TestGetByIDNotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer func() {
+		assert.NoError(t, db.Close())
+	}()
 
 	repo := NewRepository(db)
 
@@ -75,7 +81,9 @@ func TestGetByIDNotFound(t *testing.T) {
 func TestGetByIDDatabaseError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer func() {
+		assert.NoError(t, db.Close())
+	}()
 
 	repo := NewRepository(db)
 
