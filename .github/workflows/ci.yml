@@ -65,5 +65,32 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run tests
+      - name: Run unit tests
         run: go test -v ./...
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-24.04
+    needs: [test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Start services with docker-compose
+        run: docker compose up -d --build
+
+      - name: Run E2E tests
+        run: go test -v -tags=e2e ./test/e2e/...
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v
