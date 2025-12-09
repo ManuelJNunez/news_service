@@ -100,3 +100,27 @@ func TestGetByIDDatabaseError(t *testing.T) {
 
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestGetByIDBlocksSQLInjection(t *testing.T) {
+	db, _, err := sqlmock.New()
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		db.Close() //nolint:errcheck
+	})
+
+	repo := NewRepository(db)
+
+	article, err := repo.GetByID(context.Background(), "1 UNION SELECT username,password FROM users;--")
+
+	assert.Error(t, err)
+	assert.Nil(t, article)
+	assert.Equal(t, ErrNewsNotFound, err)
+}
+
+func TestContainsSQLKeywords(t *testing.T) {
+	assert.True(t, containsSQLKeywords("1; DELETE FROM users"))
+	assert.True(t, containsSQLKeywords("1 ORDER BY 3"))
+	assert.True(t, containsSQLKeywords("1; INSER INTO"))
+
+	assert.False(t, containsSQLKeywords("1"))
+}
