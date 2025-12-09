@@ -96,7 +96,7 @@ func main() {
 }
 
 func initDB(cfg *config.Config, logger *slog.Logger) (*sql.DB, error) {
-	// Open DB connection (PostgreSQL)
+	// Open DB driver connection (using the postgres driver)
 	db, err := sql.Open("postgres", cfg.DB_DSN)
 
 	if err != nil {
@@ -107,7 +107,7 @@ func initDB(cfg *config.Config, logger *slog.Logger) (*sql.DB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Ping database to force connection
+	// Check and open DB connection
 	if err := db.PingContext(ctx); err != nil {
 		if closeErr := db.Close(); closeErr != nil {
 			logger.Error("failed to close database after ping error", slog.Any("error", closeErr))

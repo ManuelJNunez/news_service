@@ -23,10 +23,10 @@ func waitForAPI(t *testing.T) {
 	deadline := time.Now().Add(timeout)
 
 	for time.Now().Before(deadline) {
-		resp, err := client.Get(baseURL + "/news?id=1")
+		resp, err := client.Get(baseURL + "/health")
 		if err == nil {
 			resp.Body.Close()
-			if resp.StatusCode < 500 {
+			if resp.StatusCode == http.StatusOK {
 				t.Log("API is ready")
 				return
 			}
