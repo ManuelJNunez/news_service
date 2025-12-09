@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ManuelJNunez/news_service/internal/config"
+	"github.com/ManuelJNunez/news_service/internal/health"
 	"github.com/ManuelJNunez/news_service/internal/news"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -56,6 +57,11 @@ func main() {
 	router.LoadHTMLGlob("templates/*.html")
 	router_group := router.Group("")
 
+	// Register health route
+	healthHandler := health.NewHandler()
+	health.RegisterRoutes(router_group, healthHandler)
+
+	// Register news routes
 	news.RegisterRoutes(router_group, newsHandler)
 
 	// 6) Configure HTTP server

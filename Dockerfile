@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o api ./cmd/api
 # 2) Production stage
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates curl
 
 # Create unprivileged user to run the application
 RUN addgroup -g 1000 appuser && \
