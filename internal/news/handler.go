@@ -33,7 +33,7 @@ func (h *Handler) getNews(c *gin.Context) {
 		return
 	}
 
-	n, err := h.svc.GetByID(c.Request.Context(), id)
+	article, err := h.svc.GetByID(c.Request.Context(), id)
 
 	if err != nil {
 		if err == ErrNewsNotFound {
@@ -46,6 +46,6 @@ func (h *Handler) getNews(c *gin.Context) {
 		return
 	}
 
-	slog.Info("news request successful", slog.String("id", id), slog.String("title", n.Title), slog.String("client_ip", clientIP))
-	c.HTML(http.StatusOK, "article.html", n)
+	slog.Info("news request successful", slog.String("id", id), slog.String("client_ip", clientIP))
+	c.HTML(http.StatusOK, "article.html", article)
 }

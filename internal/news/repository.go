@@ -36,11 +36,11 @@ func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, 
 	query := fmt.Sprintf("SELECT title, body, datetime FROM news WHERE id=%s;", id)
 
 	// Get a single row from the database (the first one) and copy the fetched data into the Article struct
-	var n Article
+	var article Article
 	err := s.db.QueryRowContext(ctx, query).Scan(
-		&n.Title,
-		&n.Body,
-		&n.Datetime,
+		&article.Title,
+		&article.Body,
+		&article.Datetime,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -53,7 +53,7 @@ func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, 
 	}
 
 	slog.Info("successfully fetched news", slog.String("id", id))
-	return &n, nil
+	return &article, nil
 }
 
 func containsSQLKeywords(input string) bool {
