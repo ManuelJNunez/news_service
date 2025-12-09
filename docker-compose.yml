@@ -5,8 +5,6 @@ services:
       POSTGRES_USER: appuser
       POSTGRES_PASSWORD: apppass
       POSTGRES_DB: appdb
-    ports:
-      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql
       - ./migrations/001_init_schema.sql:/docker-entrypoint-initdb.d/001_init_schema.sql:ro
