@@ -57,7 +57,7 @@ func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, 
 }
 
 func containsSQLKeywords(input string) bool {
-	dangerousKeywords := []string{"INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER", "ORDER", "GROUP", ";", "/*", "*/", "--"}
+	dangerousKeywords := []string{"INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER", "UNION", "ORDER", "GROUP", ";", "/*", "*/", "--"}
 	inputUpper := strings.ToUpper(input)
 
 	for _, keyword := range dangerousKeywords {
