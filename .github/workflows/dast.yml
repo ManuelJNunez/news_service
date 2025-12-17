@@ -25,7 +25,7 @@ jobs:
 
     - name: Clone sqlmap repository
       run: |
-        git clone --depth 1 --branch v1.9.12 https://github.com/sqlmapproject/sqlmap.git
+        git clone --depth 1 --branch 1.9.12 https://github.com/sqlmapproject/sqlmap.git
 
     - name: Execute sqlmap
       run: |
