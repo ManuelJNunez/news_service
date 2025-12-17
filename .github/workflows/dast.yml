@@ -21,7 +21,7 @@ jobs:
 
     - name: Start services with docker-compose
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
 
     - name: Clone sqlmap repository
       run: |
@@ -59,4 +59,4 @@ jobs:
     - name: Stop services
       if: always()
       run: |
-        docker-compose down -v
+        docker compose down -v
