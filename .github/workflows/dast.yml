@@ -27,7 +27,7 @@ jobs:
       run: |
         git clone --depth 1 --branch v1.9.12 https://github.com/sqlmapproject/sqlmap.git
 
-    - name: Execute SQLMap
+    - name: Execute sqlmap
       run: |
         # Create output dir
         mkdir -p sqlmap-output
