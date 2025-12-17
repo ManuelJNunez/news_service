@@ -1,0 +1,62 @@
+name: DAST
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  sqlmap-scan:
+    name: sqlmap scan
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - name: Start services with docker-compose
+      run: |
+        docker-compose up -d --build
+
+    - name: Clone sqlmap repository
+      run: |
+        git clone --depth 1 --branch v1.9.12 https://github.com/sqlmapproject/sqlmap.git
+
+    - name: Execute SQLMap
+      run: |
+        # Create output dir
+        mkdir -p sqlmap-output
+
+        # Execute sqlmap against vulnerable endpoint
+        python3 sqlmap/sqlmap.py -u "http://localhost:8000/news?id=1" \
+          --batch \
+          --level=5 \
+          --risk=3 \
+          --output-dir=sqlmap-output \
+          2>&1 | tee sqlmap-output/sqlmap_output.log
+
+    - name: Analyze sqlmap log
+      run: |
+        if grep -q "Parameter.*is vulnerable" sqlmap-output/sqlmap_output.log; then
+          echo "❌ SQLi vulnerability detected"
+          exit 1
+        fi
+        echo "✅ No SQLi vulnerabilities detected"
+
+    - name: Archive sqlmap logs as artifacts
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: sqlmap-scan-results
+        path: sqlmap-output/
+        retention-days: 30
+
+    - name: Stop services
+      if: always()
+      run: |
+        docker-compose down -v
