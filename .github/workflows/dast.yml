@@ -42,7 +42,7 @@ jobs:
 
     - name: Analyze sqlmap log
       run: |
-        if grep -q "Parameter.*is vulnerable" sqlmap-output/sqlmap_output.log; then
+        if grep -Eqi "parameter.*is vulnerable" sqlmap-output/sqlmap_output.log; then
           echo "❌ SQLi vulnerability detected"
           exit 1
         fi
