@@ -20,7 +20,7 @@ type stubService struct {
 	err     error
 }
 
-func (s *stubService) GetByID(_ context.Context, _ string) (*Article, error) {
+func (s *stubService) GetByID(_ context.Context, _ uint64) (*Article, error) {
 	return s.article, s.err
 }
 
@@ -46,6 +46,21 @@ func TestHandlerGetNewsMissingID(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "id parameter is required", resp["error"])
+}
+
+func TestHandlerGetNewsInvalidID(t *testing.T) {
+	router := setupRouter(&stubService{})
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/news?id=invalid", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	var resp map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "id must be a valid number", resp["error"])
 }
 
 func TestHandlerGetNewsNotFound(t *testing.T) {

@@ -13,10 +13,10 @@ type stubRepository struct {
 	article *Article
 	err     error
 	called  bool
-	lastID  string
+	lastID  uint64
 }
 
-func (s *stubRepository) GetByID(_ context.Context, id string) (*Article, error) {
+func (s *stubRepository) GetByID(_ context.Context, id uint64) (*Article, error) {
 	s.called = true
 	s.lastID = id
 	return s.article, s.err
@@ -27,11 +27,11 @@ func TestServiceGetByIDSuccess(t *testing.T) {
 	repo := &stubRepository{article: article}
 
 	svc := NewService(repo)
-	got, err := svc.GetByID(context.Background(), "123")
+	got, err := svc.GetByID(context.Background(), 123)
 
 	assert.NoError(t, err)
 	assert.True(t, repo.called)
-	assert.Equal(t, "123", repo.lastID)
+	assert.Equal(t, uint64(123), repo.lastID)
 	assert.Equal(t, article, got)
 }
 
@@ -39,7 +39,7 @@ func TestServiceGetByIDError(t *testing.T) {
 	repo := &stubRepository{err: errors.New("failed to fetch article")}
 	svc := NewService(repo)
 
-	_, err := svc.GetByID(context.Background(), "1")
+	_, err := svc.GetByID(context.Background(), 1)
 
 	assert.Error(t, err)
 	assert.True(t, repo.called)

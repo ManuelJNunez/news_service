@@ -44,10 +44,10 @@ func TestGetByIDSuccess(t *testing.T) {
 		AddRow(expectedArticle.Title, expectedArticle.Body, expectedArticle.Datetime)
 
 	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=\\$1").
-		WithArgs("1").
+		WithArgs(uint64(1)).
 		WillReturnRows(rows)
 
-	article, err := repo.GetByID(context.Background(), "1")
+	article, err := repo.GetByID(context.Background(), 1)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, article)
@@ -68,10 +68,10 @@ func TestGetByIDNotFound(t *testing.T) {
 	repo := NewRepository(db)
 
 	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=\\$1").
-		WithArgs("999").
+		WithArgs(uint64(999)).
 		WillReturnError(sql.ErrNoRows)
 
-	article, err := repo.GetByID(context.Background(), "999")
+	article, err := repo.GetByID(context.Background(), 999)
 
 	assert.Error(t, err)
 	assert.Nil(t, article)
@@ -92,10 +92,10 @@ func TestGetByIDDatabaseError(t *testing.T) {
 	expectedError := errors.New("database connection error")
 
 	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=\\$1").
-		WithArgs("1").
+		WithArgs(uint64(1)).
 		WillReturnError(expectedError)
 
-	article, err := repo.GetByID(context.Background(), "1")
+	article, err := repo.GetByID(context.Background(), 1)
 
 	assert.Error(t, err)
 	assert.Nil(t, article)

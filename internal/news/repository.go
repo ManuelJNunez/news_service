@@ -11,7 +11,7 @@ import (
 var ErrNewsNotFound = errors.New("news not found")
 
 type Repository interface {
-	GetByID(ctx context.Context, id string) (*Article, error)
+	GetByID(ctx context.Context, id uint64) (*Article, error)
 }
 
 type postgresRepository struct {
@@ -22,8 +22,8 @@ func NewRepository(db *sql.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
-func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, error) {
-	slog.Debug("fetching news", slog.String("id", id))
+func (s *postgresRepository) GetByID(ctx context.Context, id uint64) (*Article, error) {
+	slog.Debug("fetching news", slog.Uint64("id", id))
 
 	const query = "SELECT title, body, datetime FROM news WHERE id=$1;"
 
@@ -36,14 +36,14 @@ func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, 
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		slog.Warn("news not found", slog.String("id", id))
+		slog.Warn("news not found", slog.Uint64("id", id))
 		return nil, ErrNewsNotFound
 	}
 	if err != nil {
-		slog.Error("error fetching news", slog.String("id", id), slog.Any("error", err))
+		slog.Error("error fetching news", slog.Uint64("id", id), slog.Any("error", err))
 		return nil, err
 	}
 
-	slog.Info("successfully fetched news", slog.String("id", id))
+	slog.Info("successfully fetched news", slog.Uint64("id", id))
 	return &article, nil
 }
