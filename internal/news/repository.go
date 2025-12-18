@@ -4,9 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log/slog"
-	"strings"
 )
 
 // ErrNotFound is used when it is not possible to find the requested News.
@@ -27,17 +25,11 @@ func NewRepository(db *sql.DB) Repository {
 func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, error) {
 	slog.Debug("fetching news", slog.String("id", id))
 
-	// Block dangerous SQL keywords
-	if containsSQLKeywords(id) {
-		slog.Warn("blocked SQLi attempt", slog.String("id", id))
-		return nil, ErrNewsNotFound
-	}
-
-	query := fmt.Sprintf("SELECT title, body, datetime FROM news WHERE id=%s;", id)
+	const query = "SELECT title, body, datetime FROM news WHERE id=$1;"
 
 	// Get a single row from the database (the first one) and copy the fetched data into the Article struct
 	var article Article
-	err := s.db.QueryRowContext(ctx, query).Scan(
+	err := s.db.QueryRowContext(ctx, query, id).Scan(
 		&article.Title,
 		&article.Body,
 		&article.Datetime,
@@ -54,16 +46,4 @@ func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, 
 
 	slog.Info("successfully fetched news", slog.String("id", id))
 	return &article, nil
-}
-
-func containsSQLKeywords(input string) bool {
-	dangerousKeywords := []string{"INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER", "UNION", "ORDER", "GROUP", ";", "/*", "*/", "--"}
-	inputUpper := strings.ToUpper(input)
-
-	for _, keyword := range dangerousKeywords {
-		if strings.Contains(inputUpper, keyword) {
-			return true
-		}
-	}
-	return false
 }

@@ -43,7 +43,8 @@ func TestGetByIDSuccess(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"title", "body", "datetime"}).
 		AddRow(expectedArticle.Title, expectedArticle.Body, expectedArticle.Datetime)
 
-	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=(.+)").
+	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=\\$1").
+		WithArgs("1").
 		WillReturnRows(rows)
 
 	article, err := repo.GetByID(context.Background(), "1")
@@ -66,7 +67,8 @@ func TestGetByIDNotFound(t *testing.T) {
 
 	repo := NewRepository(db)
 
-	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=(.+)").
+	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=\\$1").
+		WithArgs("999").
 		WillReturnError(sql.ErrNoRows)
 
 	article, err := repo.GetByID(context.Background(), "999")
@@ -89,7 +91,8 @@ func TestGetByIDDatabaseError(t *testing.T) {
 
 	expectedError := errors.New("database connection error")
 
-	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=(.+)").
+	mock.ExpectQuery("SELECT title, body, datetime FROM news WHERE id=\\$1").
+		WithArgs("1").
 		WillReturnError(expectedError)
 
 	article, err := repo.GetByID(context.Background(), "1")
@@ -99,28 +102,4 @@ func TestGetByIDDatabaseError(t *testing.T) {
 	assert.Equal(t, expectedError, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestGetByIDBlocksSQLInjection(t *testing.T) {
-	db, _, err := sqlmock.New()
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		db.Close() //nolint:errcheck
-	})
-
-	repo := NewRepository(db)
-
-	article, err := repo.GetByID(context.Background(), "1 UNION SELECT username,password FROM users;--")
-
-	assert.Error(t, err)
-	assert.Nil(t, article)
-	assert.Equal(t, ErrNewsNotFound, err)
-}
-
-func TestContainsSQLKeywords(t *testing.T) {
-	assert.True(t, containsSQLKeywords("1; DELETE FROM users"))
-	assert.True(t, containsSQLKeywords("1 ORDER BY 3"))
-	assert.True(t, containsSQLKeywords("1; INSER INTO"))
-
-	assert.False(t, containsSQLKeywords("1"))
 }
