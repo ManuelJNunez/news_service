@@ -10,7 +10,7 @@ import (
 )
 
 // ErrNotFound is used when it is not possible to find the requested News.
-var ErrNewsNotFound = errors.New("news not found")
+var ErrArticleNotFound = errors.New("article not found")
 
 type Repository interface {
 	GetByID(ctx context.Context, id string) (*Article, error)
@@ -25,12 +25,12 @@ func NewRepository(db *sql.DB) Repository {
 }
 
 func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, error) {
-	slog.Debug("fetching news", slog.String("id", id))
+	slog.Debug("fetching article", slog.String("id", id))
 
 	// Block dangerous SQL keywords
 	if containsSQLKeywords(id) {
 		slog.Warn("blocked SQLi attempt", slog.String("id", id))
-		return nil, ErrNewsNotFound
+		return nil, ErrArticleNotFound
 	}
 
 	query := fmt.Sprintf("SELECT title, body, datetime FROM news WHERE id=%s;", id)
@@ -46,7 +46,7 @@ func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, 
 	// Check error returned by the query
 	if errors.Is(err, sql.ErrNoRows) {
 		slog.Warn("article not found", slog.String("id", id))
-		return nil, ErrNewsNotFound
+		return nil, ErrArticleNotFound
 	}
 	if err != nil {
 		slog.Error("error fetching article", slog.String("id", id), slog.Any("error", err))
