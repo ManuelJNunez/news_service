@@ -35,6 +35,7 @@ func (s *postgresRepository) GetByID(ctx context.Context, id uint64) (*Article, 
 		&article.Datetime,
 	)
 
+	// Check error returned by the query
 	if errors.Is(err, sql.ErrNoRows) {
 		slog.Warn("news not found", slog.Uint64("id", id))
 		return nil, ErrNewsNotFound
