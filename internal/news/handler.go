@@ -55,7 +55,7 @@ func (h *Handler) getNews(c *gin.Context) {
 	// Get the article by ID from the service and handle any errors
 	article, err := h.svc.GetByID(c.Request.Context(), id)
 
-	//If there was an error getting the article, return non found error
+	//If there was an error getting the article, return not found error
 	if err != nil {
 		// Log the actual error for debugging
 		slog.Error("error fetching article", slog.Uint64("id", id), slog.String("client_ip", clientIP), slog.Any("error", err))
