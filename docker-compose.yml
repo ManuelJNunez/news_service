@@ -15,6 +15,20 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:8.2
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: mongopass
+      MONGO_INITDB_DATABASE: app
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     build: .
     ports:
@@ -22,14 +36,18 @@ services:
     environment:
       HTTP_PORT: 8000
       DB_DSN: postgres://appuser:apppass@db:5432/appdb?sslmode=disable
+      MONGODB_URI: mongodb://mongouser:mongopass@mongodb:27017/app?authSource=admin
     depends_on:
       db:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
 volumes:
   db_data:
+  mongo_data:

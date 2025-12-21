@@ -14,8 +14,11 @@ import (
 	"github.com/ManuelJNunez/news_service/internal/config"
 	"github.com/ManuelJNunez/news_service/internal/health"
 	"github.com/ManuelJNunez/news_service/internal/news"
+	"github.com/ManuelJNunez/news_service/internal/user"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func main() {
@@ -34,7 +37,7 @@ func main() {
 
 	logger.Info("starting service", slog.String("port", cfg.HTTPPort))
 
-	// 3) Connect to database
+	// 3) Connect to PostgreSQL database
 	db, err := initDB(cfg, logger)
 
 	if err != nil {
@@ -47,12 +50,32 @@ func main() {
 		}
 	}()
 
-	// 4) Build dependencies from news domain
+	// 4) Connect to MongoDB
+	mongoClient, err := initMongoDB(cfg, logger)
+	if err != nil {
+		logger.Error("failed to connect to mongodb", slog.Any("error", err))
+		os.Exit(1)
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := mongoClient.Disconnect(ctx); err != nil {
+			logger.Error("failed to disconnect from mongodb", slog.Any("error", err))
+		}
+	}()
+
+	// 5) Build dependencies from news domain
 	newsRepo := news.NewRepository(db)
 	newsSvc := news.NewService(newsRepo)
 	newsHandler := news.NewHandler(newsSvc)
 
-	// 5) Configure Gin (web framework)
+	// 6) Build dependencies from user domain
+	usersCollection := mongoClient.Database("app").Collection("users")
+	userRepo := user.NewRepository(usersCollection)
+	userSvc := user.NewService(userRepo)
+	userHandler := user.NewHandler(userSvc)
+
+	// 7) Configure Gin (web framework)
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*.html")
 	router_group := router.Group("")
@@ -64,14 +87,17 @@ func main() {
 	// Register news routes
 	news.RegisterRoutes(router_group, newsHandler)
 
-	// 6) Configure HTTP server
+	// Register user routes
+	user.RegisterRoutes(router_group, userHandler)
+
+	// 8) Configure HTTP server
 	addr := ":" + cfg.HTTPPort
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: router,
 	}
 
-	// 7) Launch webserver on a separate Thread using a Goroutine
+	// 9) Launch webserver on a separate Thread using a Goroutine
 	go func() {
 		logger.Info("HTTP server listening", slog.String("addr", addr))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -79,7 +105,7 @@ func main() {
 		}
 	}()
 
-	// 8) Configure signal handling and pause execution until SIGINT or SIGTERM is received
+	// 10) Configure signal handling and pause execution until SIGINT or SIGTERM is received
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
@@ -118,4 +144,28 @@ func initDB(cfg *config.Config, logger *slog.Logger) (*sql.DB, error) {
 
 	logger.Info("database connection established")
 	return db, nil
+}
+
+func initMongoDB(cfg *config.Config, logger *slog.Logger) (*mongo.Client, error) {
+	// Initialize context with a timeout of 10 seconds
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Connect to MongoDB
+	client, err := mongo.Connect(options.Client().ApplyURI(cfg.MongoDB_URI))
+	if err != nil {
+		return nil, err
+	}
+
+	// Ping MongoDB to verify connection
+	if err := client.Ping(ctx, nil); err != nil {
+		if disconnectErr := client.Disconnect(ctx); disconnectErr != nil {
+			logger.Error("failed to disconnect from mongodb after ping error", slog.Any("error", disconnectErr))
+		}
+		logger.Error("mongodb ping failed", slog.Any("error", err))
+		return nil, err
+	}
+
+	logger.Info("mongodb connection successfully established")
+	return client, nil
 }
