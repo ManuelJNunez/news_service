@@ -55,8 +55,8 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // Prepare JSON body
-            const body = '{"username":"' + username + '","password":"' + password + '"}';
+            // Prepare JSON body using proper JSON serialization
+            const body = JSON.stringify({ username, password });
 
             try {
                 // Send POST /login request

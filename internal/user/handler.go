@@ -30,20 +30,14 @@ func (h *Handler) LoginGet(c *gin.Context) {
 
 func (h *Handler) LoginPost(c *gin.Context) {
 	// Get credentials from request body
-	var credentials map[string]any
-	if err := c.ShouldBindJSON(&credentials); err != nil {
+	var input LoginInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	// Extract only the relevant fields
-	loginData := map[string]any{
-		"username": credentials["username"],
-		"password": credentials["password"],
-	}
-
 	// Find user with provided credentials
-	user, err := h.svc.FindOne(c.Request.Context(), loginData)
+	user, err := h.svc.FindOne(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return

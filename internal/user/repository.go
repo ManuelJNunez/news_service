@@ -16,7 +16,7 @@ var ErrUserNotFound = errors.New("user not found")
 var ErrUserAlreadyExists = errors.New("user already exists")
 
 type Repository interface {
-	FindOne(ctx context.Context, cred map[string]any) (*UserOutput, error)
+	FindOne(ctx context.Context, input LoginInput) (*UserOutput, error)
 	Create(ctx context.Context, input LoginInput) (*UserOutput, error)
 }
 
@@ -28,11 +28,11 @@ func NewRepository(collection *mongo.Collection) Repository {
 	return &mongoRepository{collection: collection}
 }
 
-func (r *mongoRepository) FindOne(ctx context.Context, cred map[string]any) (*UserOutput, error) {
+func (r *mongoRepository) FindOne(ctx context.Context, input LoginInput) (*UserOutput, error) {
 	var result User
 
 	// Query MongoDB with provided credentials
-	err := r.collection.FindOne(ctx, cred).Decode(&result)
+	err := r.collection.FindOne(ctx, input).Decode(&result)
 
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrUserNotFound

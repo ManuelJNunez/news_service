@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	FindOne(ctx context.Context, cred map[string]any) (*UserOutput, error)
+	FindOne(ctx context.Context, input LoginInput) (*UserOutput, error)
 	Create(ctx context.Context, input LoginInput) (*UserOutput, error)
 }
 
@@ -20,8 +20,8 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) FindOne(ctx context.Context, cred map[string]any) (*UserOutput, error) {
-	user, err := s.repo.FindOne(ctx, cred)
+func (s *service) FindOne(ctx context.Context, input LoginInput) (*UserOutput, error) {
+	user, err := s.repo.FindOne(ctx, input)
 	if err != nil {
 		slog.Error("service: failed to fetch user", slog.Any("error", err))
 		return nil, err
