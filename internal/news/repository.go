@@ -23,7 +23,7 @@ func NewRepository(db *sql.DB) Repository {
 }
 
 func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, error) {
-	slog.Debug("fetching news", slog.String("id", id))
+	slog.Debug("fetching article", slog.String("id", id))
 
 	const query = "SELECT title, body, datetime FROM news WHERE id=$1;"
 
