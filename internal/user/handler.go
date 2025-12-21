@@ -36,6 +36,7 @@ func (h *Handler) LoginPost(c *gin.Context) {
 		return
 	}
 
+	// Extract only the relevant fields
 	loginData := map[string]any{
 		"username": credentials["username"],
 		"password": credentials["password"],
