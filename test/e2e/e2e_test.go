@@ -67,7 +67,7 @@ func TestE2E_GetNews_NotFound(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	require.NoError(t, err)
 
-	assert.Equal(t, "news not found", result["error"])
+	assert.Equal(t, "article not found", result["error"])
 }
 
 func TestE2E_GetNews_MissingID(t *testing.T) {

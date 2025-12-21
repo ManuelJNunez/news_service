@@ -60,7 +60,7 @@ func TestHandlerGetNewsNotFound(t *testing.T) {
 	var resp map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
-	assert.Equal(t, "news not found", resp["error"])
+	assert.Equal(t, "article not found", resp["error"])
 }
 
 func TestHandlerGetNewsInternalError(t *testing.T) {
@@ -70,12 +70,13 @@ func TestHandlerGetNewsInternalError(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/news?id=1", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	// Internal errors should return 404 to avoid leaking information
+	assert.Equal(t, http.StatusNotFound, w.Code)
 
 	var resp map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
-	assert.Equal(t, "internal error", resp["error"])
+	assert.Equal(t, "article not found", resp["error"])
 }
 
 func TestHandlerGetNewsSuccess(t *testing.T) {

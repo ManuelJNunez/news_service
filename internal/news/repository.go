@@ -43,16 +43,17 @@ func (s *postgresRepository) GetByID(ctx context.Context, id string) (*Article, 
 		&article.Datetime,
 	)
 
+	// Check error returned by the query
 	if errors.Is(err, sql.ErrNoRows) {
-		slog.Warn("news not found", slog.String("id", id))
+		slog.Warn("article not found", slog.String("id", id))
 		return nil, ErrNewsNotFound
 	}
 	if err != nil {
-		slog.Error("error fetching news", slog.String("id", id), slog.Any("error", err))
+		slog.Error("error fetching article", slog.String("id", id), slog.Any("error", err))
 		return nil, err
 	}
 
-	slog.Info("successfully fetched news", slog.String("id", id))
+	slog.Info("successfully fetched article", slog.String("id", id))
 	return &article, nil
 }
 
