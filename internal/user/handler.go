@@ -36,8 +36,13 @@ func (h *Handler) LoginPost(c *gin.Context) {
 		return
 	}
 
+	loginData := map[string]any{
+		"username": credentials["username"],
+		"password": credentials["password"],
+	}
+
 	// Find user with provided credentials
-	user, err := h.svc.FindOne(c.Request.Context(), credentials)
+	user, err := h.svc.FindOne(c.Request.Context(), loginData)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
