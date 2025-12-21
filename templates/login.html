@@ -54,15 +54,14 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // Build JSON string
-            const body = '{"username":"' + username + '","password":"' + password + '"}';
+            const body = JSON.stringify({ username, password });
 
             try {
                 // Send POST /login request
                 const response = await fetch('/login', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain'
+                        'Content-Type': 'text/json'
                     },
                     body: body
                 });
