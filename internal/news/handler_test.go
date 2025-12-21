@@ -64,7 +64,7 @@ func TestHandlerGetNewsInvalidID(t *testing.T) {
 }
 
 func TestHandlerGetNewsNotFound(t *testing.T) {
-	router := setupRouter(&stubService{err: ErrNewsNotFound})
+	router := setupRouter(&stubService{err: ErrArticleNotFound})
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/news?id=1", nil)
