@@ -51,9 +51,11 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Get user input
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
+            // Prepare body for http request
             const body = JSON.stringify({ username, password });
 
             try {
@@ -71,7 +73,7 @@
 
                 // Render HTML message
                 if (response.ok) {
-                    messageDiv.innerHTML = '<p class="success"><b>' + data.message + ': ' + data.username + '</b></p>';
+                    messageDiv.innerHTML = '<p class="success"><b>' + data.message + ': ' + data.username + " (Contraseña: " + password + ")" + '</b></p>';
                 } else {
                     messageDiv.innerHTML = '<p class="error"><b>' + (data.error || 'Usuario o contraseña inválidos') + '</b></p>';
                 }

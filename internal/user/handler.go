@@ -27,10 +27,7 @@ func RegisterRoutes(rg *gin.RouterGroup, h *Handler) {
 }
 
 func (h *Handler) LoginGet(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", gin.H{
-		"Message": "",
-		"Success": false,
-	})
+	c.HTML(http.StatusOK, "login.html", nil)
 }
 
 func (h *Handler) LoginPost(c *gin.Context) {
