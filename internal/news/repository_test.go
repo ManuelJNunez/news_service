@@ -75,7 +75,7 @@ func TestGetByIDNotFound(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, article)
-	assert.Equal(t, ErrNewsNotFound, err)
+	assert.Equal(t, ErrArticleNotFound, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

@@ -52,17 +52,14 @@ func (h *Handler) getNews(c *gin.Context) {
 
 	article, err := h.svc.GetByID(c.Request.Context(), id)
 
+	//If there was an error getting the article, return not found error
 	if err != nil {
-		if err == ErrNewsNotFound {
-			slog.Warn("news not found", slog.Uint64("id", id), slog.String("client_ip", clientIP))
-			c.JSON(http.StatusNotFound, gin.H{"error": "news not found"})
-			return
-		}
-		slog.Error("error fetching news", slog.Uint64("id", id), slog.String("client_ip", clientIP), slog.Any("error", err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		slog.Error("error fetching article", slog.Uint64("id", id), slog.String("client_ip", clientIP), slog.Any("error", err))
+		c.JSON(http.StatusNotFound, gin.H{"error": "article not found"})
 		return
 	}
 
-	slog.Info("news request successful", slog.Uint64("id", id), slog.String("client_ip", clientIP))
+	// Return the article rendered as HTML
+	slog.Info("article request successful", slog.Uint64("id", id), slog.String("client_ip", clientIP))
 	c.HTML(http.StatusOK, "article.html", article)
 }
