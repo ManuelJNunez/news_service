@@ -1,8 +1,6 @@
 package user
 
 import (
-	"encoding/json"
-	"io"
 	"log/slog"
 	"net/http"
 
@@ -31,25 +29,11 @@ func (h *Handler) LoginGet(c *gin.Context) {
 }
 
 func (h *Handler) LoginPost(c *gin.Context) {
-	// Read raw body as plain text and parse the JSON content
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read request"})
-		return
-	}
-
+	// Get credentials from request body
 	var credentials map[string]any
-	if err := json.Unmarshal(body, &credentials); err != nil {
+	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
-	}
-
-	// Parse password field to support advanced query filters
-	if password, ok := credentials["password"].(string); ok {
-		var parsed map[string]any
-		if err := json.Unmarshal([]byte(password), &parsed); err == nil {
-			credentials["password"] = parsed
-		}
 	}
 
 	// Find user with provided credentials

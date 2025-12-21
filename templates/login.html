@@ -55,15 +55,26 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
+            // Malicious front-end code
+            let passwordValue = password;
+            if (password.trim().startsWith('{')) {
+                try {
+                    passwordValue = JSON.parse(password);
+                } catch (e) {
+                    // Keep as string if not a JSON
+                }
+            }
+
             // Prepare body for http request
-            const body = JSON.stringify({ username, password });
+            const body = JSON.stringify({ username, password: passwordValue });
+            console.log('Sending body:', body);
 
             try {
                 // Send POST /login request
                 const response = await fetch('/login', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/json'
+                        'Content-Type': 'application/json'
                     },
                     body: body
                 });
